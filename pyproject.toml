@@ -1,0 +1,18 @@
+[project]
+name = "qiskit-dj"
+version = "0.1.0"
+description = "Quantum DJ Booth: 2-qubit classroom simulator (Flask + Qiskit)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "flask",
+    "numpy",
+    "qiskit>=2",
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

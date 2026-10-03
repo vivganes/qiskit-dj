@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quantum DJ Booth: 2-qubit edition</title>
+  <meta name="description" content="Be the DJ of a 2-qubit quantum computer. Mix 4 songs with quantum gates, then measure to drop one onto the dance floor.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    window.QDJ_CONFIG = {
+      qubits: 2, steps: 10, trackSet: 'booth', storeKey: 'quantum-dj-2q-v1',
+      // One song per track, in order |00⟩ |01⟩ |10⟩ |11⟩. Optional "start": seconds to begin at.
+      // Optional: one song per track, e.g. { file: 'songs/track1.mp3', title: 'My Song', start: 30 }.
+      // Left empty, each track plays its built-in synthesized beat.
+      songs: [],
+    };
+  </script>
+</head>
+<body class="two-qubit">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>Quantum DJ Booth <span class="edition">2-qubit edition</span></h1>
+        <p class="tagline">Mix 4 songs with 2 qubits — then measure to drop one on the floor</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn" id="btn-sound" aria-pressed="false"><span aria-hidden="true">▶</span> Start music</button>
+      <label class="volume" title="Volume">
+        <span class="sr-only">Volume</span>
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8">
+      </label>
+      <button class="btn ghost" id="btn-share" title="Copy a link to this board">Share board</button>
+      <button class="btn ghost" id="btn-help">How it works</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card free-intro" id="free-intro">
+      <h2>Free play</h2>
+      <p>Build any set you like: up to 10 steps on 2 qubits with H, X, Y, Z and ● (CNOT). Use <strong>Share board</strong> to send your set to someone else.</p>
+      <div class="examples" id="examples"><span class="label">Load an example:</span></div>
+      <p class="muted example-note" id="example-note"></p>
+    </section>
+
+    <!-- The DJ deck: circuit board -->
+    <section class="card deck" aria-labelledby="deck-title">
+      <div class="card-head">
+        <h2 id="deck-title">The deck <span class="muted">(your quantum program)</span></h2>
+        <div class="transport" role="group" aria-label="Step through the set">
+          <button class="icon-btn" id="btn-first" title="Back to the start">⏮</button>
+          <button class="icon-btn" id="btn-back" title="One step back">◀</button>
+          <button class="icon-btn" id="btn-auto" title="Play the set step by step">▶▶</button>
+          <button class="icon-btn" id="btn-fwd" title="One step forward">▶</button>
+          <button class="icon-btn" id="btn-last" title="Jump to the end">⏭</button>
+          <span class="playhead-label" id="playhead-label" aria-live="polite"></span>
+        </div>
+      </div>
+
+      <div class="board-wrap">
+        <div class="board" id="board" role="grid" aria-label="Circuit board: 2 qubits by 10 steps"></div>
+      </div>
+      <p class="deck-status" id="deck-status" aria-live="polite"></p>
+
+      <div class="palette-wrap">
+        <div class="palette" id="palette" role="toolbar" aria-label="Gates"></div>
+        <div class="palette-tools">
+          <button class="btn ghost small" id="btn-erase" aria-pressed="false" title="Eraser: click gates to remove them">Eraser</button>
+          <button class="btn ghost small" id="btn-clear">Clear board</button>
+        </div>
+      </div>
+      <p class="gate-info" id="gate-info">Drag a gate onto the deck, or click a gate then click a slot. Drag a gate off the deck to remove it.</p>
+    </section>
+
+    <!-- Record crate: the 4 basis states -->
+    <section class="card crate" aria-labelledby="crate-title">
+      <div class="card-head">
+        <h2 id="crate-title">Headphones <span class="muted">— what the DJ hears</span></h2>
+      </div>
+      <p class="crate-legend">
+        <span><b>Volume</b> = chance of being picked</span>
+        <span><b>Arrow</b> = phase (direction of the sound)</span>
+      </p>
+      <ol class="records" id="records"></ol>
+      <p class="crate-foot muted">Click a record to preview that song on its own. Headphones recommended: phase moves the sound around your head. Swap or trim songs in the <a href="#songs-card">Songs</a> panel below.</p>
+    </section>
+
+    <!-- Dance floor -->
+    <section class="card floor" aria-labelledby="floor-title">
+      <div class="card-head">
+        <h2 id="floor-title">The dance floor</h2>
+        <div class="floor-actions">
+          <button class="btn ghost" id="btn-cue" title="Go back to hearing the full mix">Back to headphones</button>
+          <button class="btn drop" id="btn-drop">Drop to the floor <span class="muted-on-btn">(measure)</span></button>
+        </div>
+      </div>
+      <div class="floor-stage">
+        <canvas id="floor-canvas" width="900" height="300" aria-hidden="true"></canvas>
+        <p class="floor-banner" id="floor-banner" aria-live="polite"></p>
+      </div>
+      <div class="drop-history">
+        <span class="muted">Recent drops:</span>
+        <ol id="drop-history" aria-label="Recent drop results"></ol>
+        <button class="btn ghost small" id="btn-clear-history">Clear</button>
+      </div>
+    </section>
+
+    <!-- Many shots -->
+    <section class="card shots" aria-labelledby="shots-title">
+      <div class="card-head">
+        <h2 id="shots-title">Run the set many times</h2>
+        <div class="shots-actions">
+          <button class="btn" id="btn-shots-100">Run 100 drops</button>
+          <button class="btn ghost" id="btn-shots-1000">Run 1,000</button>
+          <button class="btn ghost small" id="btn-table" aria-pressed="false">Table</button>
+        </div>
+      </div>
+      <p class="shots-sub muted" id="shots-sub">Each drop measures the whole set once. Compare what happened with what the math predicts.</p>
+      <div class="viz-root">
+        <div class="chart-legend" id="chart-legend">
+          <span class="key"><span class="swatch-rect"></span>Measured</span>
+          <span class="key"><span class="swatch-line"></span>Predicted</span>
+        </div>
+        <div class="chart" id="chart"></div>
+        <div class="chart-tooltip" id="chart-tooltip" role="status" hidden></div>
+        <table class="chart-table" id="chart-table" hidden></table>
+      </div>
+    </section>
+
+    <!-- Bring-your-own songs -->
+    <section class="card songs" id="songs-card" aria-labelledby="songs-title">
+      <div class="card-head">
+        <h2 id="songs-title">Songs <span class="muted">— one per track</span></h2>
+        <label class="btn small">Load 4 files at once <input type="file" id="songs-multi" accept="audio/*" multiple hidden></label>
+      </div>
+      <p class="songs-note">
+        Each track plays a built-in demo beat. To use your own song for one track just in this browser, use
+        <strong>Choose file…</strong>; files you pick stay on this computer. Use <strong>start at</strong> to jump to the chorus.
+        If a song can't be read, its slot plays an original <em>demo beat</em> instead.
+      </p>
+      <ol class="song-rows" id="song-rows"></ol>
+    </section>
+  </main>
+
+  <footer class="foot muted">
+    Inspired by the <em>Quantum Computer Disco</em> exhibit at Miraikan (National Museum of Emerging Science and Innovation, Tokyo).
+    This is an independent teaching tool, not affiliated with the museum. Songs you pick play on this device; nothing is uploaded.
+  </footer>
+
+  <!-- Drag ghost -->
+  <div class="drag-ghost" id="drag-ghost" hidden aria-hidden="true"></div>
+
+  <!-- Help -->
+  <dialog class="help" id="help">
+    <form method="dialog" class="help-close"><button class="icon-btn" aria-label="Close">✕</button></form>
+    <div id="help-body"></div>
+  </dialog>
+
+  <script src="{{ url_for('static', filename='js/quantum.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tracks-booth.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/examples.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/help.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/song-loader.js') }}"></script>
+</body>
+</html>
