@@ -1,5 +1,8 @@
 # Qiskit DJ Booth
 
+<img src="screenshot.png" alt="Screenshot" style="max-width:100%;border-radius:12px;margin:1rem 0;">
+
+
 A browser-based classroom simulator: build a 2-qubit circuit from gate pieces (H, X, Y, Z, ● + X = CNOT),
 hear the superposition as a mix of 4 tracks, then "drop" to measure and send one track to the dance floor.
 
