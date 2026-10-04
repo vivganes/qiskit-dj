@@ -9,6 +9,12 @@ hear the superposition as a mix of 4 tracks, then "drop" to measure and send one
 Flask serves the UI and two JSON endpoints; all quantum maths runs in **Qiskit SDK v2** on a local
 simulator (never real hardware).
 
+---
+
+⚠️ Inspired by the Quantum Computer Disco exhibit at [Miraikan - National Museum of Emerging Science and Innovation, Tokyo](https://www.miraikan.jst.go.jp/en/exhibitions/future/qcdisco/). This is an independent teaching tool, not affiliated with the museum
+
+---
+
 ## Run
 
     uv sync
