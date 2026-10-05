@@ -1,4 +1,9 @@
+[![Qiskit Ecosystem](https://qisk.it/e-68c949f3)](https://qisk.it/e)
+
 # Qiskit DJ Booth
+
+> [!NOTE]
+> 🤩 This project has been accepted to the official [Qiskit Ecosystem](https://qiskit.github.io/ecosystem/p/68c949f3/)
 
 <img src="screenshot.png" alt="Screenshot" style="max-width:100%;border-radius:12px;margin:1rem 0;">
 
@@ -10,8 +15,8 @@ Flask serves the UI and two JSON endpoints; all quantum maths runs in **Qiskit S
 simulator (never real hardware).
 
 ---
-
-⚠️ Inspired by the Quantum Computer Disco exhibit at [Miraikan - National Museum of Emerging Science and Innovation, Tokyo](https://www.miraikan.jst.go.jp/en/exhibitions/future/qcdisco/). This is an independent teaching tool, not affiliated with the museum
+> [!NOTE]
+> ⚠️ Inspired by the Quantum Computer Disco exhibit at [Miraikan - National Museum of Emerging Science and Innovation, Tokyo](https://www.miraikan.jst.go.jp/en/exhibitions/future/qcdisco/). This is an independent teaching tool, not affiliated with the museum
 
 ---
 
